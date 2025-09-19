@@ -1,0 +1,13 @@
+{
+  "profiles": {
+    "GameDataOCR.API": {
+      "commandName": "Project",
+      "launchBrowser": true,
+      "launchUrl": "swagger",
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development"
+      },
+      "applicationUrl": "https://localhost:55233;http://localhost:55234"
+    }
+  }
+}
