@@ -1,0 +1,189 @@
+<div class="upload-container">
+  <!-- Image preview and controls - shown at top when images are selected -->
+  <div *ngIf="selectedFiles.length > 0" class="preview-container top-preview">
+    <div class="preview-header">
+      <h3>Selected Images ({{ selectedFiles.length }})</h3>
+      <div class="preview-actions">
+        <button (click)="clearImages()" class="clear-btn">×</button>
+      </div>
+    </div>
+
+    <div class="ocr-provider-selector">
+      <h4>OCR Provider</h4>
+      <label class="radio-option">
+        <input
+          type="radio"
+          name="ocrProvider"
+          value="azure"
+          [(ngModel)]="selectedOcrProvider"
+          class="radio-input">
+        <span class="radio-label">Azure Vision API</span>
+      </label>
+      <label class="radio-option">
+        <input
+          type="radio"
+          name="ocrProvider"
+          value="google"
+          [(ngModel)]="selectedOcrProvider"
+          class="radio-input">
+        <span class="radio-label">Google Vision API</span>
+      </label>
+    </div>
+
+    <div class="data-type-selector">
+      <h4>Data Type</h4>
+      <label class="radio-option">
+        <input
+          type="radio"
+          name="dataType"
+          value="industry"
+          [(ngModel)]="selectedDataType"
+          class="radio-input">
+        <span class="radio-label">Industry Data</span>
+      </label>
+      <label class="radio-option">
+        <input
+          type="radio"
+          name="dataType"
+          value="prices"
+          [(ngModel)]="selectedDataType"
+          class="radio-input">
+        <span class="radio-label">Prices Data</span>
+      </label>
+    </div>
+
+    <button
+      (click)="extractData()"
+      [disabled]="isProcessing"
+      class="process-btn"
+    >
+      <span *ngIf="!isProcessing">Extract Data from {{ selectedFiles.length }} Image(s)</span>
+      <span *ngIf="isProcessing">
+        Processing {{ currentlyProcessing }}... ({{ processingProgress }}/{{ totalFiles }})
+      </span>
+    </button>
+
+    <div class="progress-container" *ngIf="isProcessing">
+      <div class="progress-bar">
+        <div class="progress-fill" [style.width.%]="(processingProgress / totalFiles) * 100"></div>
+      </div>
+      <p class="progress-text">{{ processingProgress }}/{{ totalFiles }} files processed</p>
+    </div>
+
+    <div class="images-container">
+      <div *ngFor="let preview of imagePreviews; let i = index" class="image-item">
+        <img [src]="preview" alt="Preview" class="image-preview">
+        <p class="file-name">{{ selectedFiles[i].name }}</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Upload area - shown when no images are selected -->
+  <div *ngIf="selectedFiles.length === 0" class="upload-section">
+    <h2>Upload Image for Processing</h2>
+
+    <div class="upload-options">
+      <div class="file-input-container">
+        <input
+          type="file"
+          #fileInput
+          (change)="onFileSelect($event)"
+          accept="image/*"
+          multiple
+          class="file-input"
+        >
+        <button (click)="fileInput.click()" class="upload-btn">
+          Choose Images
+        </button>
+      </div>
+
+      <div class="or-divider">OR</div>
+
+      <div
+        class="paste-area"
+        (paste)="onPaste($event)"
+        (dragover)="onDragOver($event)"
+        (drop)="onDrop($event)"
+        tabindex="0"
+      >
+        <div class="paste-content">
+          <div class="paste-icon">📋</div>
+          <div class="paste-text">
+            <strong>Paste screenshot here</strong>
+            <p>Click here and press Ctrl+V (or Cmd+V) to paste from clipboard</p>
+            <p><em>Or drag and drop image files (multiple files supported)</em></p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Show a compact upload option when images are selected -->
+  <div *ngIf="selectedFiles.length > 0" class="compact-upload">
+    <button (click)="fileInput2.click()" class="change-image-btn">
+      Add More Images
+    </button>
+    <input
+      type="file"
+      #fileInput2
+      (change)="onFileSelect($event)"
+      accept="image/*"
+      multiple
+      class="file-input"
+      style="display: none;"
+    >
+  </div>
+
+  <div *ngIf="extractedDataResults.length > 0" class="extracted-data">
+    <h3>Extracted Data Results ({{ extractedDataResults.length }} files processed):</h3>
+
+    <div *ngFor="let result of extractedDataResults; let i = index" class="result-item">
+      <h4>File {{ i + 1 }}: {{ selectedFiles[i]?.name || 'Unknown' }}</h4>
+
+      <div *ngIf="selectedDataType === 'prices' && result.success" class="prices-summary">
+        <p><strong>Resources Found:</strong> {{ result.priceData?.items?.length || 0 }}</p>
+        <p><strong>File Type:</strong> Prices Data (NATO/USSR)</p>
+        <p><strong>Status:</strong> Data saved and indexed for calculations</p>
+
+        <div class="resources-preview" *ngIf="result.priceData?.items && (result.priceData?.items?.length || 0) > 0">
+          <h5>Resources Preview:</h5>
+          <div *ngFor="let item of (result.priceData?.items || []).slice(0, 3)" class="resource-item">
+            <strong>{{ item.resource }}:</strong>
+            NATO ({{ item.natoSell }}/{{ item.natoBuy }}) |
+            USSR ({{ item.ussrSell }}/{{ item.ussrBuy }})
+          </div>
+          <p *ngIf="result.priceData?.items && (result.priceData?.items?.length || 0) > 3">
+            ... and {{ (result.priceData?.items?.length || 0) - 3 }} more resources
+          </p>
+        </div>
+      </div>
+
+      <div *ngIf="selectedDataType === 'industry' && result.success" class="industry-summary">
+        <p><strong>Industry Name:</strong> {{ result.industryData?.name }}</p>
+        <p><strong>Sections Found:</strong> {{ result.industryData?.sections?.length || 0 }}</p>
+        <p><strong>File Type:</strong> Industry Data (Production/Consumption)</p>
+        <p><strong>Status:</strong> Data saved and indexed for calculations</p>
+
+        <div class="sections-preview" *ngIf="result.industryData?.sections && (result.industryData?.sections?.length || 0) > 0">
+          <h5>Sections Preview:</h5>
+          <div *ngFor="let section of (result.industryData?.sections || []).slice(0, 2)" class="section-item">
+            <div class="section-header">
+              <strong>{{ section.sectionName }}</strong>
+            </div>
+            <div class="section-details">
+              <span *ngFor="let item of section.items.slice(0, 2)">{{ item }}</span>
+            </div>
+          </div>
+          <p *ngIf="result.industryData?.sections && (result.industryData?.sections?.length || 0) > 2">
+            ... and {{ (result.industryData?.sections?.length || 0) - 2 }} more sections
+          </p>
+        </div>
+      </div>
+
+      <div *ngIf="!result.success" class="error-summary">
+        <p><strong>Status:</strong> Failed to process</p>
+        <p><strong>Error:</strong> {{ result.errorMessage }}</p>
+      </div>
+    </div>
+  </div>
+</div>

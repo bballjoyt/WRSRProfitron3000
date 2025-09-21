@@ -247,4 +247,113 @@ public class GameDataController : ControllerBase
 
         return Ok(new { Message = $"Deleted industry '{industryName}'" });
     }
+
+    // WORKDAY ENDPOINTS
+
+    /// <summary>
+    /// Get workday pricing information
+    /// </summary>
+    [HttpGet("workdays")]
+    public async Task<ActionResult<Workday>> GetWorkday()
+    {
+        var workday = await _context.Workdays.FirstOrDefaultAsync(w => w.Name == "Workday");
+
+        if (workday == null)
+        {
+            // Return default workday with zero costs
+            return Ok(new Workday
+            {
+                Name = "Workday",
+                NatoBuy = 0,
+                UssrBuy = 0,
+                NatoSell = 0,
+                UssrSell = 0,
+                LastUpdated = DateTime.UtcNow
+            });
+        }
+
+        return Ok(workday);
+    }
+
+    /// <summary>
+    /// Update workday pricing
+    /// </summary>
+    [HttpPut("workdays")]
+    public async Task<ActionResult<Workday>> UpdateWorkday([FromBody] UpdateWorkdayRequest request)
+    {
+        var workday = await _context.Workdays.FirstOrDefaultAsync(w => w.Name == "Workday");
+
+        if (workday == null)
+        {
+            workday = new Workday
+            {
+                Name = "Workday",
+                NatoBuy = request.NatoBuy,
+                UssrBuy = request.UssrBuy,
+                NatoSell = 0, // Workdays don't have sell prices
+                UssrSell = 0, // Workdays don't have sell prices
+                LastUpdated = DateTime.UtcNow
+            };
+            _context.Workdays.Add(workday);
+        }
+        else
+        {
+            workday.NatoBuy = request.NatoBuy;
+            workday.UssrBuy = request.UssrBuy;
+            workday.NatoSell = 0; // Ensure sell prices stay zero
+            workday.UssrSell = 0; // Ensure sell prices stay zero
+            workday.LastUpdated = DateTime.UtcNow;
+        }
+
+        await _context.SaveChangesAsync();
+        return Ok(workday);
+    }
+
+    /// <summary>
+    /// Get workday buy price for specific currency
+    /// </summary>
+    [HttpGet("workdays/buy/{currency}")]
+    public async Task<ActionResult<decimal>> GetWorkdayBuyPrice(string currency)
+    {
+        var workday = await _context.Workdays.FirstOrDefaultAsync(w => w.Name == "Workday");
+
+        if (workday == null)
+        {
+            return Ok(new { Resource = "Workday", Currency = currency.ToUpper(), BuyPrice = 0.0m });
+        }
+
+        var price = currency.ToUpper() switch
+        {
+            "NATO" => workday.NatoBuy,
+            "USSR" => workday.UssrBuy,
+            _ => throw new ArgumentException("Currency must be 'NATO' or 'USSR'")
+        };
+
+        return Ok(new { Resource = "Workday", Currency = currency.ToUpper(), BuyPrice = price });
+    }
+
+    /// <summary>
+    /// Reset workday pricing to zero
+    /// </summary>
+    [HttpDelete("workdays")]
+    public async Task<ActionResult> ResetWorkday()
+    {
+        var workday = await _context.Workdays.FirstOrDefaultAsync(w => w.Name == "Workday");
+
+        if (workday != null)
+        {
+            workday.NatoBuy = 0;
+            workday.UssrBuy = 0;
+            workday.LastUpdated = DateTime.UtcNow;
+            await _context.SaveChangesAsync();
+        }
+
+        return Ok(new { Message = "Workday pricing reset to zero" });
+    }
+}
+
+public class UpdateWorkdayRequest
+{
+    public decimal NatoBuy { get; set; }
+    public decimal UssrBuy { get; set; }
 }

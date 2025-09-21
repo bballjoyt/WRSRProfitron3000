@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Read(//c/Workspaces/WRSRProfitron3000/Website/src/app/image-upload/**)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}

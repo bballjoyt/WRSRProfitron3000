@@ -1,0 +1,24 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npx @angular/cli@latest new:*)",
+      "Read(//c/Workspaces/WRSRProfitron/**)",
+      "Bash(npx ng generate:*)",
+      "Bash(npm run build:*)",
+      "Bash(npx ng build:*)",
+      "Bash(dotnet build)",
+      "Bash(npm install)",
+      "Bash(find:*)",
+      "Bash(dotnet ef migrations add:*)",
+      "Bash(dotnet ef database:*)",
+      "Bash(sqlite3:*)",
+      "Bash(dotnet run:*)",
+      "Bash(curl:*)",
+      "Bash(ng serve:*)",
+      "Bash(taskkill:*)",
+      "Bash(dotnet ef migrations:*)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}

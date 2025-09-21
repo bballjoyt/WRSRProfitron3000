@@ -1,0 +1,125 @@
+<div class="building-details-container">
+  <div class="header-section">
+    <div class="header-top">
+      <button (click)="goBack()" class="back-btn">← Back to Industry Manager</button>
+    </div>
+    <h1 *ngIf="building">{{ building.name }}</h1>
+    <div *ngIf="!building" class="error">Building not found</div>
+  </div>
+
+  <div *ngIf="building" class="content-sections">
+    <!-- Basic Building Info -->
+    <div class="info-section">
+      <h2>Building Information</h2>
+      <div class="building-stats">
+        <div class="stat-item">
+          <span class="stat-label">Max Workers:</span>
+          <span class="stat-value">{{ building.maxWorkers || 1 }}</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-label">Max Production per Day:</span>
+          <span class="stat-value">{{ building.production.maxPerDay }}</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-label">Max Production per Building:</span>
+          <span class="stat-value">{{ building.production.maxPerBuilding }}</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Construction Materials -->
+    <div class="info-section">
+      <h2>Construction Materials</h2>
+      <div class="materials-list">
+        <div *ngFor="let material of building.constructionCost.materials" class="material-item">
+          <span class="material-name">{{ material.name }}</span>
+          <span class="material-quantity">{{ material.quantity }}</span>
+          <span class="import-source">{{ material.importSource }}</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Production Outputs -->
+    <div class="info-section">
+      <h2>Production Outputs</h2>
+      <div class="outputs-list">
+        <div *ngFor="let output of building.production.outputs" class="output-item">
+          <span class="output-name">{{ output.name }}</span>
+          <span class="output-quantity">{{ output.quantity }}</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Consumption Inputs -->
+    <div class="info-section" *ngIf="building.consumption.inputs.length > 0">
+      <h2>Consumption Inputs</h2>
+      <div class="inputs-list">
+        <div *ngFor="let input of building.consumption.inputs" class="input-item">
+          <span class="input-name">{{ input.name }}</span>
+          <span class="input-quantity">{{ input.quantity }}</span>
+          <span class="import-source">{{ input.importSource }}</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Cost Analysis -->
+    <div class="info-section">
+      <h2>Cost Analysis</h2>
+      <div class="cost-analysis">
+        <div class="strategy-comparison">
+          <div class="strategy-card ussr">
+            <h3>USSR Strategy</h3>
+            <div class="cost-item">
+              <span>Construction Cost:</span>
+              <span>₽ {{ getConstructionCostUSSR() | number:'1.2-2' }}</span>
+            </div>
+            <div class="cost-item">
+              <span>Daily Import Cost:</span>
+              <span>₽ {{ getDailyImportCostUSSR() | number:'1.2-2' }}</span>
+            </div>
+            <div class="cost-item">
+              <span>Daily Export Value:</span>
+              <span>₽ {{ getDailyExportValueUSSR() | number:'1.2-2' }}</span>
+            </div>
+            <div class="cost-item profit">
+              <span>Daily Profit:</span>
+              <span [class.profit]="getDailyProfitUSSR() > 0" [class.loss]="getDailyProfitUSSR() < 0">
+                ₽ {{ getDailyProfitUSSR() | number:'1.2-2' }}
+              </span>
+            </div>
+            <div class="cost-item">
+              <span>Profit per Worker:</span>
+              <span>₽ {{ getProfitPerWorkerUSSR() | number:'1.2-2' }}</span>
+            </div>
+          </div>
+
+          <div class="strategy-card nato">
+            <h3>NATO Strategy</h3>
+            <div class="cost-item">
+              <span>Construction Cost:</span>
+              <span>$ {{ getConstructionCostNATO() | number:'1.2-2' }}</span>
+            </div>
+            <div class="cost-item">
+              <span>Daily Import Cost:</span>
+              <span>$ {{ getDailyImportCostNATO() | number:'1.2-2' }}</span>
+            </div>
+            <div class="cost-item">
+              <span>Daily Export Value:</span>
+              <span>$ {{ getDailyExportValueNATO() | number:'1.2-2' }}</span>
+            </div>
+            <div class="cost-item profit">
+              <span>Daily Profit:</span>
+              <span [class.profit]="getDailyProfitNATO() > 0" [class.loss]="getDailyProfitNATO() < 0">
+                $ {{ getDailyProfitNATO() | number:'1.2-2' }}
+              </span>
+            </div>
+            <div class="cost-item">
+              <span>Profit per Worker:</span>
+              <span>$ {{ getProfitPerWorkerNATO() | number:'1.2-2' }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

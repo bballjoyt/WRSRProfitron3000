@@ -1,0 +1,35 @@
+<div class="app-container">
+  <header class="app-header">
+    <h1>Game Data OCR Calculator</h1>
+    <p>Upload images, extract text, and perform calculations on game data</p>
+  </header>
+
+  <nav class="app-nav">
+    <button
+      (click)="navigateToView('/upload')"
+      [class.active]="isActiveRoute('/upload')"
+      class="nav-btn"
+    >
+      Upload Image
+    </button>
+    <button
+      (click)="navigateToView('/prices')"
+      [class.active]="isActiveRoute('/prices')"
+      class="nav-btn"
+    >
+      Prices Manager
+    </button>
+    <button
+      (click)="navigateToView('/industries')"
+      [class.active]="isActiveRoute('/industries')"
+      class="nav-btn"
+    >
+      Industries
+    </button>
+  </nav>
+
+  <main class="app-main">
+    <!-- Router outlet for all pages -->
+    <router-outlet></router-outlet>
+  </main>
+</div>

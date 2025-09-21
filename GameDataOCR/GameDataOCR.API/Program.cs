@@ -4,11 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using DotNetEnv;
 
 // Load environment variables from .env file
-var envPath = Path.Combine(Directory.GetCurrentDirectory(), ".env");
-Console.WriteLine($"Looking for .env file at: {envPath}");
-Console.WriteLine($".env file exists: {File.Exists(envPath)}");
-Env.Load(envPath);
-Console.WriteLine($"After Env.Load() - CONNECTION_STRINGS__DEFAULTCONNECTION: {Environment.GetEnvironmentVariable("CONNECTION_STRINGS__DEFAULTCONNECTION")}");
+Env.Load();
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -19,14 +15,17 @@ if (!string.IsNullOrEmpty(envConnectionString))
     builder.Configuration["ConnectionStrings:DefaultConnection"] = envConnectionString;
 }
 
-builder.Services.AddControllers();
+builder.Services.AddControllers()
+    .AddJsonOptions(options =>
+    {
+        options.JsonSerializerOptions.ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.IgnoreCycles;
+        options.JsonSerializerOptions.DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull;
+    });
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 // Add Entity Framework
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") ?? "Data Source=gamedata.db";
-Console.WriteLine($"Using connection string: {connectionString}");
-Console.WriteLine($"Environment variable CONNECTION_STRINGS__DEFAULTCONNECTION: {Environment.GetEnvironmentVariable("CONNECTION_STRINGS__DEFAULTCONNECTION")}");
 builder.Services.AddDbContext<GameDataContext>(options =>
     options.UseSqlite(connectionString));
 

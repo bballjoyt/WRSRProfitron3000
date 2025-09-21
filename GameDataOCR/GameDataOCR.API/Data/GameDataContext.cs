@@ -12,6 +12,7 @@ public class GameDataContext : DbContext
     public DbSet<Resource> Resources { get; set; }
     public DbSet<Industry> Industries { get; set; }
     public DbSet<IndustrySectionEntity> IndustrySections { get; set; }
+    public DbSet<Workday> Workdays { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -49,6 +50,18 @@ public class GameDataContext : DbContext
                 v => string.Join(';', v),
                 v => v.Split(';', StringSplitOptions.RemoveEmptyEntries).ToList()
             );
+        });
+
+        // Workday configuration
+        modelBuilder.Entity<Workday>(entity =>
+        {
+            entity.HasKey(e => e.Name);
+            entity.Property(e => e.Name).HasMaxLength(100);
+            entity.Property(e => e.NatoBuy).HasColumnType("decimal(18,2)");
+            entity.Property(e => e.NatoSell).HasColumnType("decimal(18,2)").HasDefaultValue(0);
+            entity.Property(e => e.UssrBuy).HasColumnType("decimal(18,2)");
+            entity.Property(e => e.UssrSell).HasColumnType("decimal(18,2)").HasDefaultValue(0);
+            entity.Property(e => e.LastUpdated).HasDefaultValueSql("datetime('now')");
         });
 
         base.OnModelCreating(modelBuilder);
